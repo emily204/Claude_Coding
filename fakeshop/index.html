@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#6d28d9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>PretendPay Shop</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <h1 id="title">Shop</h1>
+  <button class="icon-btn" id="cart-btn" aria-label="Open cart">🛒<span id="cart-count" class="badge" hidden>0</span></button>
+</header>
+<main id="view" tabindex="-1"></main>
+<nav class="tabbar">
+  <a href="#/" data-tab="shop">🛍️<span>Shop</span></a>
+  <a href="#/cart" data-tab="cart">🛒<span>Cart</span></a>
+  <a href="#/orders" data-tab="orders">📦<span>Orders</span></a>
+  <a href="#/profile" data-tab="profile">👤<span>Profile</span></a>
+</nav>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="products.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

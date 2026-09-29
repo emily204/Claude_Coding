@@ -1,0 +1,20 @@
+const PRODUCTS = [
+  { id: 1, name: "Cloud Sneakers", cat: "Fashion", price: 89.0, emoji: "👟", bg: "#fde68a", desc: "Impossibly light. Walk on clouds, no refunds needed because nothing is real." },
+  { id: 2, name: "Denim Jacket", cat: "Fashion", price: 74.5, emoji: "🧥", bg: "#bfdbfe", desc: "A classic layer that goes with everything you already own." },
+  { id: 3, name: "Sun Hat", cat: "Fashion", price: 24.99, emoji: "👒", bg: "#fed7aa", desc: "Wide brim, big vibes." },
+  { id: 4, name: "Round Sunglasses", cat: "Fashion", price: 39.0, emoji: "🕶️", bg: "#ddd6fe", desc: "Main-character energy, UV protected." },
+  { id: 5, name: "Wireless Headphones", cat: "Tech", price: 149.99, emoji: "🎧", bg: "#c7d2fe", desc: "40-hour battery and noise cancelling for maximum daydreaming." },
+  { id: 6, name: "Smart Watch", cat: "Tech", price: 219.0, emoji: "⌚", bg: "#a7f3d0", desc: "Tracks steps, sleep and how many fake orders you've placed." },
+  { id: 7, name: "Mechanical Keyboard", cat: "Tech", price: 119.0, emoji: "⌨️", bg: "#fecaca", desc: "Clicky, satisfying, and totally overkill for email." },
+  { id: 8, name: "Drone Camera", cat: "Tech", price: 499.0, emoji: "🚁", bg: "#bae6fd", desc: "4K aerial shots of your imaginary vacation." },
+  { id: 9, name: "Ceramic Plant Pot", cat: "Home", price: 18.0, emoji: "🪴", bg: "#bbf7d0", desc: "Because every shelf needs a little green." },
+  { id: 10, name: "Cozy Blanket", cat: "Home", price: 45.0, emoji: "🛋️", bg: "#fbcfe8", desc: "Chunky knit. Sofa naps guaranteed." },
+  { id: 11, name: "Scented Candle", cat: "Home", price: 21.0, emoji: "🕯️", bg: "#fef08a", desc: "Notes of vanilla, cedar and a dash of impulse buy." },
+  { id: 12, name: "Espresso Machine", cat: "Home", price: 329.0, emoji: "☕", bg: "#e7d5c3", desc: "Café-quality shots at home." },
+  { id: 13, name: "Board Game Classic", cat: "Fun", price: 32.0, emoji: "🎲", bg: "#fca5a5", desc: "Friendships tested since forever." },
+  { id: 14, name: "Acoustic Guitar", cat: "Fun", price: 259.0, emoji: "🎸", bg: "#fdba74", desc: "Learn three chords, play a thousand songs." },
+  { id: 15, name: "Retro Game Console", cat: "Fun", price: 79.0, emoji: "🎮", bg: "#d8b4fe", desc: "500 built-in games and zero loading screens." },
+  { id: 16, name: "Chocolate Box", cat: "Treats", price: 15.5, emoji: "🍫", bg: "#d6b9a3", desc: "Twelve pieces. No judgment if it's gone in a day." },
+  { id: 17, name: "Donut Dozen", cat: "Treats", price: 12.0, emoji: "🍩", bg: "#fbcfe8", desc: "Glazed, sprinkled and dangerously fresh." },
+  { id: 18, name: "Bubble Tea Kit", cat: "Treats", price: 27.0, emoji: "🧋", bg: "#fde68a", desc: "Make boba at home with tapioca pearls and thick straws." }
+];
