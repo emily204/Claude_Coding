@@ -9,9 +9,18 @@ A mobile-first shopping app for the satisfaction of checking out without paying.
 - Order history with a confetti confirmation
 - Installable PWA (works offline once loaded), dark mode support
 
-## Run it
+## Install on an Android phone (Chrome or Samsung Internet)
+
+The repo deploys itself to GitHub Pages (`.github/workflows/pages.yml`). After a one-time setup
+(Settings > Pages > Source: **GitHub Actions**), the app is served at
+`https://<your-username>.github.io/Claude_Coding/`.
+
+1. Open that address on your phone in Chrome.
+2. Tap the three-dot menu, then **Add to Home screen** (or **Install app**).
+3. Launch it from the home screen like any other app.
+
+## Run locally
 
     cd fakeshop && python3 -m http.server 8000
 
-Open http://localhost:8000 on your phone (same Wi-Fi, using your computer's IP) and choose "Add to Home Screen" to install it like an app.
 Any card number of 13-19 digits with a future expiry and a 3-4 digit CVC works; tap "Fill a test card" for one.
