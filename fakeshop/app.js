@@ -97,27 +97,29 @@ function showErrors(root, errs) {
 }
 
 // ---------- views ----------
-let shopCat = "All", shopQ = "";
+let shopCat = "All", shopStore = "All", shopQ = "";
 const cats = ["All", ...new Set(PRODUCTS.map(p => p.cat))];
+const stores = ["All", ...new Set(PRODUCTS.map(p => p.store))];
 function gridHtml() {
   const q = shopQ.toLowerCase();
-  const list = PRODUCTS.filter(p => (shopCat === "All" || p.cat === shopCat) && (!q || (p.name + p.cat).toLowerCase().includes(q)));
+  const list = PRODUCTS.filter(p => (shopCat === "All" || p.cat === shopCat) && (shopStore === "All" || p.store === shopStore) && (!q || (p.name + p.cat + p.store).toLowerCase().includes(q)));
   if (!list.length) return `<div class="empty"><div class="em">🔍</div><p>Nothing matches “${esc(shopQ)}”.</p></div>`;
   return `<div class="grid">${list.map(p => `<div class="card"><a href="#/product/${p.id}"><div class="thumb" style="background:${p.bg}">${p.emoji}</div>
-    <div class="info"><div class="name">${esc(p.name)}</div><div class="price">${money(p.price)}</div></div></a>
+    <div class="info"><div class="muted store">${esc(p.store)}</div><div class="name">${esc(p.name)}</div><div class="price">${money(p.price)}</div></div></a>
     <button class="btn sm" data-action="add" data-id="${p.id}">Add to cart</button></div>`).join("")}</div>`;
 }
 function shopView() {
   setTitle("Shop");
   view.innerHTML = `<input class="search" id="q" type="search" placeholder="Search products…" value="${esc(shopQ)}" aria-label="Search products">
-    <div class="chips">${cats.map(c => `<button class="chip ${c === shopCat ? "on" : ""}" data-action="cat" data-cat="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+    <div class="chips" aria-label="Stores">${stores.map(c => `<button class="chip ${c === shopStore ? "on" : ""}" data-action="store" data-store="${esc(c)}">${c === "All" ? "All stores" : esc(c)}</button>`).join("")}</div>
+    <div class="chips" aria-label="Categories">${cats.map(c => `<button class="chip ${c === shopCat ? "on" : ""}" data-action="cat" data-cat="${esc(c)}">${esc(c)}</button>`).join("")}</div>
     <div id="grid">${gridHtml()}</div>`;
 }
 function productView(id) {
   const p = byId(id); if (!p) return location.hash = "#/";
   setTitle(p.name);
   view.innerHTML = `<div class="hero" style="background:${p.bg}">${p.emoji}</div>
-    <div class="panel"><div class="muted">${esc(p.cat)}</div><h2 class="big" style="margin:4px 0">${esc(p.name)}</h2>
+    <div class="panel"><div class="muted">${esc(p.store)} · ${esc(p.cat)}</div><h2 class="big" style="margin:4px 0">${esc(p.name)}</h2>
     <div class="price big">${money(p.price)}</div><p>${esc(p.desc)}</p>
     <button class="btn" data-action="add" data-id="${p.id}">Add to cart</button>
     <button class="btn ghost" style="margin-top:8px" data-action="buynow" data-id="${p.id}">Buy now</button></div>`;
@@ -244,6 +246,7 @@ document.addEventListener("click", e => {
   e.preventDefault();
   if (a === "add") addToCart(id);
   else if (a === "buynow") { addToCart(id); location.hash = "#/checkout"; }
+  else if (a === "store") { shopStore = el.dataset.store; shopView(); }
   else if (a === "cat") { shopCat = el.dataset.cat; shopView(); }
   else if (a === "inc" || a === "dec") { if (line) { line.qty += a === "inc" ? 1 : -1; if (line.qty < 1) state.cart = state.cart.filter(i => i !== line); save(); cartView(); } }
   else if (a === "remove") { state.cart = state.cart.filter(i => i.id !== id); save(); cartView(); }

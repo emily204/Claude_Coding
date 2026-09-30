@@ -12,7 +12,7 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
 .tabbar a span{font-size:11px;margin-top:2px}.tabbar a.on{color:var(--p);font-weight:700}
 main{max-width:720px;margin:0 auto;padding:14px 16px;outline:none}
 .search{width:100%;padding:12px 14px;border:1px solid var(--bd);border-radius:12px;font-size:16px;background:#fff}
-.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0;scrollbar-width:none}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:8px 0;scrollbar-width:none}
 .chip{flex:none;border:1px solid var(--bd);background:#fff;border-radius:20px;padding:7px 14px;font-size:14px;cursor:pointer;color:var(--tx)}
 .chip.on{background:var(--p);color:#fff;border-color:var(--p)}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
@@ -52,3 +52,5 @@ input.bad{border-color:var(--err)}.err{color:var(--err);font-size:13px;margin-to
 @media(prefers-color-scheme:dark){:root{--bg:#14111f;--card:#211c33;--tx:#f0edfa;--mu:#a29db8;--bd:#3a3352}
   input,select,.search,.chip,.qty button{background:#2a2440;color:var(--tx)}.tabbar{background:#211c33}.btn.ghost{background:#3a3352;color:#ddd0ff}
   .fakebar{background:#3b2f0b;color:#fde68a}.btn.danger{background:#4a1f26}}
+
+.store{font-size:12px;text-transform:uppercase;letter-spacing:.04em}
