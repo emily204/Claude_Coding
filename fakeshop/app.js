@@ -203,6 +203,7 @@ function profileView() {
       <div id="billing" ${pr.billingSame ? "hidden" : ""}>${addrForm("bill", pr.billing)}</div></div>
     <div class="panel"><h2>💳 Fake credit card</h2>${cardForm(pr.card)}</div>
     <button class="btn" type="submit">Save</button>
+    ${window.gateEnabled?.() ? `<button class="btn ghost" type="button" style="margin-top:8px" data-action="lock">🔒 Lock the shop</button>` : ""}
     <button class="btn danger" type="button" style="margin-top:8px" data-action="wipe">Erase all my data</button></form>`;
 }
 function saveProfile(form) {
@@ -250,6 +251,7 @@ document.addEventListener("click", e => {
   else if (a === "cat") { shopCat = el.dataset.cat; shopView(); }
   else if (a === "inc" || a === "dec") { if (line) { line.qty += a === "inc" ? 1 : -1; if (line.qty < 1) state.cart = state.cart.filter(i => i !== line); save(); cartView(); } }
   else if (a === "remove") { state.cart = state.cart.filter(i => i.id !== id); save(); cartView(); }
+  else if (a === "lock") window.lockShop();
   else if (a === "clearorders") { if (confirm("Clear your pretend order history?")) { state.orders = []; save(); ordersView(); } }
   else if (a === "wipe") { if (confirm("Erase saved addresses, card, cart and orders?")) { localStorage.removeItem(KEY); state = load(); save(); profileView(); toast("Erased"); } }
   else if (a === "testcard") {
@@ -274,7 +276,10 @@ document.addEventListener("submit", e => {
   e.preventDefault();
   if (e.target.id === "checkout") placeOrder(e.target); else if (e.target.id === "profile") saveProfile(e.target);
 });
-$("#cart-btn").addEventListener("click", () => (location.hash = "#/cart"));
-addEventListener("hashchange", router);
-updateBadge(); router();
+function start() {
+  $("#cart-btn").addEventListener("click", () => (location.hash = "#/cart"));
+  addEventListener("hashchange", router);
+  updateBadge(); router();
+}
+(window.requireGate || (f => f()))(start);
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});

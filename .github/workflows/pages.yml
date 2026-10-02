@@ -18,6 +18,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: Create password lock from the SHOP_PASSWORD secret
+        env:
+          SHOP_PASSWORD: ${{ secrets.SHOP_PASSWORD }}
+        run: node scripts/make-gate.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
