@@ -114,3 +114,29 @@ workflow; that is intentional here. The hosted curator reads the raw GitHub
 snapshot directly, so a source-snapshot update requires no Pages deployment.
 The collector runner's access must be verified independently: if a store also
 rejects GitHub Actions, automatic collection of that source is still blocked.
+
+## Verified access limitation and activation
+
+The first GitHub-hosted collector run returned HTTP 403 for **both** retailers:
+https://github.com/emily204/Claude_Coding/actions/runs/39760231974
+Consequently, daily scheduled collection is paused unless the repository variable
+`CATALOG_RUNNER_LABEL` is set. Manual workflow dispatch remains available to test
+a changed access configuration. To enable reliable automation, provide a Linux
+GitHub Actions runner on a network permitted by the retailers, verify that both
+source requests succeed there, and set that variable to the runner's label.
+An approved retailer feed is another option, but needs its own integration.
+Do not describe the default GitHub-hosted collector as working.
+
+Fresh initial snapshots were collected from the Codex environment: Sephora has
+2,690 makeup products over 45 pages; Jellycat has 754 shop-all products over
+32 pages. Jellycat price ranges retain both their minimum and maximum USD
+amounts, and stock remains Unknown unless an explicit sold-out label is present.
+The seeds are complete snapshots, not mock products, but they expire after
+72 hours. If the collector remains blocked, the curator reports stale data and
+keeps previously imported products rather than pretending it refreshed them.
+
+The hosted curator must be redeployed with the latest merch-curator source to
+use the fallback and display Jellycat. Preserve its project identity, D1 binding,
+and runtime secrets. This update also replaces redirect:'error' fetch options
+with redirect:'manual': the Cloudflare Worker runtime does not support 'error'.
+Non-success/redirect responses remain rejected, including for GitHub publishing.

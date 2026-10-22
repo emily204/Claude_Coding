@@ -10,7 +10,10 @@ concurrency:
   cancel-in-progress: false
 jobs:
   refresh:
-    runs-on: ubuntu-latest
+    # Both retailers denied the first GitHub-hosted run (HTTP 403). Keep the
+    # daily schedule paused until an allowed collector runner is configured.
+    if: github.event_name == 'workflow_dispatch' || vars.CATALOG_RUNNER_LABEL != ''
+    runs-on: ${{ vars.CATALOG_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
