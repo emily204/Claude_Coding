@@ -1,4 +1,4 @@
-# Atelier Emi
+# Atelier Lao
 
 A mobile-first shopping app for the satisfaction of checking out without paying. No backend, no dependencies, and no real payments.
 

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#6d28d9">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Atelier Emi</title>
+<title>Atelier Lao</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -13,9 +13,10 @@
 </head>
 <body>
 <header class="topbar">
-  <h1 id="title">Atelier Emi</h1>
+  <h1 id="title">Atelier Lao</h1>
   <button class="icon-btn" id="cart-btn" aria-label="Open cart">🛒<span id="cart-count" class="badge" hidden>0</span></button>
 </header>
+<section class="catalog-sync" aria-label="Catalog update status"><div><p id="catalog-sync-message" role="status" aria-live="polite">Checking for catalog updates…</p><p id="catalog-sync-updated">Last updated: Not yet published</p></div><button id="catalog-refresh" type="button">Check for updates</button></section>
 <main id="view" tabindex="-1"></main>
 <nav class="tabbar">
   <a href="#/" data-tab="shop">🛍️<span>Shop</span></a>

@@ -22,6 +22,8 @@ jobs:
         env:
           SHOP_PASSWORD: ${{ secrets.SHOP_PASSWORD }}
         run: node scripts/make-gate.mjs
+      - name: Generate live catalog update status
+        run: node scripts/make-catalog-status.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

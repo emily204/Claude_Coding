@@ -231,3 +231,31 @@ feed into temporary D1 and checks that unrelated records remain intact.
 
 Deploy latest `merch-curator/main`, preserving database and runtime secrets,
 then click Banana Republic → Refresh store to start a fresh job.
+
+### Visible Atelier Lao update progress
+
+The curator's Atelier Lao control shows sending, waiting for deployment, confirmed
+live, failed, delayed, and unavailable status. Its publication attempt is stored
+in a small additive `catalog_publication` D1 table created automatically; no
+existing product tables are changed. A two-minute publish lease prevents
+concurrent submissions. A deployment still pending after 15 minutes shows a
+link to check GitHub instead of claiming success.
+
+The Pages workflow generates the small public `data/catalog-status.json` from
+the catalog actually included in its deployment. The curator polls that manifest
+every ten seconds while visible and confirms completion only when its timestamp
+matches the submitted version. Unchanged publications keep their original
+catalog timestamp. Sending or publishing failures keep the previous live date.
+No new secrets are required. The original Pages deployment must complete before
+the manifest can be read.
+
+The shop displays checking/ready/offline state and the last applied catalog date,
+with a manual Check for updates button. During cart or checkout review, it shows
+Update ready and applies the new catalog when the user returns to Shop. Its last
+updated timestamp changes only after applying the catalog. Dates use the viewer's
+local time. Sample products do not get a made-up update date.
+
+Validation includes six shop unit tests, 44 curator unit tests, type checking,
+production build, isolated publication lifecycle checks, and mobile browser
+checks of sending/deployment/live, deferred updates, cart preservation, offline
+retention and horizontal overflow. No test publishes real catalog data.

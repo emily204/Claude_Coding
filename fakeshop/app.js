@@ -1,5 +1,5 @@
 "use strict";
-/* Atelier Emi — a browse-and-buy demo. No payment is ever processed and nothing leaves your device. */
+/* Atelier Lao — a browse-and-buy demo. No payment is ever processed and nothing leaves your device. */
 
 const KEY = "pretendpay.v1";
 const $ = s => document.querySelector(s);
@@ -225,7 +225,7 @@ function saveProfile(form) {
 }
 
 // ---------- misc ----------
-function setTitle(t) { $("#title").textContent = t; document.title = t + " · Atelier Emi"; }
+function setTitle(t) { $("#title").textContent = t; document.title = t + " · Atelier Lao"; }
 function confetti() {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   for (let i = 0; i < 28; i++) {
@@ -279,11 +279,19 @@ document.addEventListener("submit", e => {
   e.preventDefault();
   if (e.target.id === "checkout") placeOrder(e.target); else if (e.target.id === "profile") saveProfile(e.target);
 });
-let catalogRequest = false, catalogVersion = "", pendingCatalog = null;
+let catalogRequest = false, catalogVersion = "", pendingCatalog = null, catalogUpdatedAt = null;
+function catalogStatus(message) {
+ const status=$("#catalog-sync-message"), updated=$("#catalog-sync-updated"), button=$("#catalog-refresh");
+ if(status)status.textContent=message;
+ if(updated)updated.textContent=catalogUpdatedAt ? "Last updated: "+new Date(catalogUpdatedAt).toLocaleString(undefined,{dateStyle:"medium",timeStyle:"short"}) : "Last updated: Not yet published";
+ if(button)button.disabled=catalogRequest;
+ document.querySelector(".catalog-sync")?.setAttribute("aria-busy",String(catalogRequest));
+}
 function start() {
   $("#cart-btn").addEventListener("click", () => (location.hash = "#/cart"));
   addEventListener("hashchange", router);
   updateBadge(); router();
+  $("#catalog-refresh")?.addEventListener("click",refreshCatalog);
   refreshCatalog();
   setInterval(() => { if (!document.hidden) refreshCatalog(); }, 60000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshCatalog(); });
@@ -298,30 +306,33 @@ document.addEventListener("error", e => { const i = e.target; if (i.tagName === 
 async function refreshCatalog() {
   if (catalogRequest) return;
   catalogRequest = true;
+  catalogStatus("Checking for updates…");
   try {
     const response = await fetch("data/catalog.json", {cache: "no-store", signal: AbortSignal.timeout(15000)});
     if (!response.ok) throw Error("Catalog unavailable");
     const data = await response.json();
     if (data.schema_version !== 1 || !Array.isArray(data.products)) throw Error("Invalid catalog");
-    if (!data.exported_at || !Number.isFinite(Date.parse(data.exported_at))) return;
+    if (!data.exported_at) { catalogStatus("Sample catalog — awaiting the first published update."); return; }
+    if (!Number.isFinite(Date.parse(data.exported_at))) throw Error("Invalid catalog timestamp");
     const version = JSON.stringify(data);
-    if (version === catalogVersion) return;
+    if (version === catalogVersion) { catalogStatus("Catalog is up to date."); return; }
     const {convertCatalog} = await import("./catalog-core.mjs");
     const converted = convertCatalog(data);
     // Unknown currencies must not silently empty the shop.
     if (data.products.length && !converted.products.length) throw Error("No supported products in catalog");
-    pendingCatalog = {products: converted.products, version};
+    pendingCatalog = {products: converted.products, version, updatedAt:data.exported_at};
     applyPendingCatalog();
-  } catch { /* Keep the last usable catalog when offline or the feed is invalid. */ }
-  finally { catalogRequest = false; }
+  } catch { catalogStatus("Could not check for updates. Showing the last available catalog."); }
+  finally { catalogRequest = false; const button=$("#catalog-refresh");if(button)button.disabled=false;document.querySelector(".catalog-sync")?.setAttribute("aria-busy","false"); }
 }
 function applyPendingCatalog() {
   if (!pendingCatalog) return;
   const route = location.hash.split("/")[1] || "";
   // Do not replace prices or forms during checkout, cart review, or profile edits.
-  if (!["", "product"].includes(route)) return;
+  if (!["", "product"].includes(route)) { catalogStatus("Update ready — return to Shop to apply it."); return; }
   PRODUCTS.splice(0, PRODUCTS.length, ...pendingCatalog.products);
-  catalogVersion = pendingCatalog.version; pendingCatalog = null;
+  catalogVersion = pendingCatalog.version; catalogUpdatedAt = pendingCatalog.updatedAt; pendingCatalog = null;
+  catalogStatus("Catalog is up to date.");
   cats = ["All", ...new Set(PRODUCTS.map(p => p.cat))];
   stores = ["All", ...new Set(PRODUCTS.map(p => p.store))];
   if (!cats.includes(shopCat)) shopCat = "All";
