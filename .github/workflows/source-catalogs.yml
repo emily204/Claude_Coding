@@ -16,7 +16,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   refresh:
-    # Hosted runners are verified for Cider and Calvin Klein. An allowed custom
+    # Hosted runners are verified for Cider, Calvin Klein and Banana Republic.
+    # An allowed custom
     # runner is still required for scheduled Sephora/Jellycat collection.
     runs-on: ${{ vars.CATALOG_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 30

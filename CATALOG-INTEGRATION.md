@@ -171,7 +171,7 @@ The workflow now accepts a `source` choice, so Cider can be tested independently
 Cider's browser collector passed on a GitHub-hosted runner:
 https://github.com/emily204/Claude_Coding/actions/runs/39820132876
 It collected and committed 899 unique products across 30 pages. The daily
-workflow now defaults to Cider and Calvin Klein on GitHub-hosted runners; selecting a
+workflow now defaults to Cider, Calvin Klein and Banana Republic on GitHub-hosted runners; selecting a
 configured allowed custom runner restores scheduled collection of all sources.
 No additional secret is required for Cider collection. Hosted curator access
 still requires deploying the updated app and testing its import there.
@@ -187,7 +187,7 @@ a failed run; no saved products are discarded by a failed or stale feed.
 GitHub collection was verified by successful run
 https://github.com/emily204/Claude_Coding/actions/runs/39852810419, which published
 a complete 2,051-product feed at `fakeshop/data/source-catalogs/calvinklein.json`.
-The daily 16:15 UTC workflow now collects both Calvin Klein and Cider using the
+The daily 16:15 UTC workflow now collects Calvin Klein, Cider and Banana Republic using the
 `hosted` selection. Sephora/Jellycat still require an allowed runner. Manual
 choices also support `calvinklein` alone. No new secret is needed.
 
@@ -203,3 +203,31 @@ Deploy the latest `merch-curator/main`, preserving its database and runtime
 secrets, then click Calvin Klein → Refresh store to retry the failed job.
 A GitHub feed update alone does not deploy the curator or replace Atelier Lao's
 combined catalog. Completed imports use the existing shop publication path.
+
+### Banana Republic catalog consistency fix
+
+Banana Republic's advertised total changed from 1,060 to 1,062 between tests.
+The old generic validation error could mean a changed total, incorrect page or
+unreadable response; it does not prove which occurred on the hosted app. The
+collector now gives a specific retry message for changing totals and uses a
+per-run public URL marker to avoid mixing independently cached pages.
+
+The curator now imports Banana Republic from a complete repository snapshot,
+rather than making a sequence of live API requests from its hosted network.
+The GitHub collector still checks page numbers, locale, nonempty products,
+fixed result totals, and final-page completion before publishing atomically.
+Failed collection leaves the last snapshot intact. Snapshots older than 72h or
+with invalid origins, IDs or prices fail without completing the curator job.
+
+Successful GitHub run:
+https://github.com/emily204/Claude_Coding/actions/runs/39853365771
+published 1,164 unique color records to
+`fakeshop/data/source-catalogs/bananarepublic.json`. Related style colors can
+make this count exceed the site's advertised listing count. Banana Republic
+now joins Calvin Klein and Cider in the daily `hosted` collector selection.
+No additional secrets are required. The built-app test
+`node tests/source-fallback-live.mjs bananarepublic` imports the real public
+feed into temporary D1 and checks that unrelated records remain intact.
+
+Deploy latest `merch-curator/main`, preserving database and runtime secrets,
+then click Banana Republic → Refresh store to start a fresh job.

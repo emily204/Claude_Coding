@@ -11,7 +11,7 @@ const only = process.argv[2] === 'all' ? undefined : process.argv[2];
 const hosted = only === 'hosted';
 if (only && !hosted && !['sephora', 'jellycat', 'cider', 'calvinklein', 'bananarepublic'].includes(only)) throw Error('Choose hosted, all, sephora, jellycat, cider, calvinklein or bananarepublic.');
 for (const [store, loadPage] of Object.entries({bananarepublic: bananaRepublicPage, calvinklein: calvinKleinPage, sephora: sephoraPage, jellycat: jellycatPage, cider: null})) {
-  if (hosted ? !['cider','calvinklein'].includes(store) : only && store !== only) continue;
+  if (hosted ? !['cider','calvinklein','bananarepublic'].includes(store) : only && store !== only) continue;
   const temporary = new URL(store + '.json.tmp', directory);
   try {
     let cursor = null, complete = false, coverage;
