@@ -8,7 +8,7 @@ on:
         description: Source catalog to collect
         type: choice
         default: all
-        options: [all, sephora, jellycat, cider]
+        options: [all, sephora, jellycat, cider, calvinklein]
 permissions:
   contents: write
 concurrency:

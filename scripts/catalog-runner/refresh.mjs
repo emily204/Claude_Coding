@@ -1,4 +1,5 @@
 // These adapters are vendored from merch-curator/lib; update both copies together.
+import {calvinKleinPage} from './calvinklein-catalog.ts';
 import {sephoraPage} from './sephora-catalog.ts';
 import {jellycatPage} from './jellycat-catalog.ts';
 import {mkdir, writeFile, rename, unlink} from 'node:fs/promises';
@@ -6,8 +7,8 @@ import {mkdir, writeFile, rename, unlink} from 'node:fs/promises';
 const directory = new URL('../../fakeshop/data/source-catalogs/', import.meta.url);
 await mkdir(directory, {recursive: true});
 const only = process.argv[2] === 'all' ? undefined : process.argv[2];
-if (only && !['sephora', 'jellycat', 'cider'].includes(only)) throw Error('Choose sephora, jellycat or cider.');
-for (const [store, loadPage] of Object.entries({sephora: sephoraPage, jellycat: jellycatPage, cider: null})) {
+if (only && !['sephora', 'jellycat', 'cider', 'calvinklein'].includes(only)) throw Error('Choose sephora, jellycat, cider or calvinklein.');
+for (const [store, loadPage] of Object.entries({calvinklein: calvinKleinPage, sephora: sephoraPage, jellycat: jellycatPage, cider: null})) {
   if (only && store !== only) continue;
   const temporary = new URL(store + '.json.tmp', directory);
   try {
