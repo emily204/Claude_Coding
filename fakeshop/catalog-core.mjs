@@ -1,6 +1,6 @@
 // Shared by the live shop and the command-line importer.
 const STORE_GROUP = { Zara: "Fashion", Taobao: "Fashion", Nordstrom: "Fashion", DSW: "Fashion", ALO: "Fashion", POPFLEX: "Fashion",
-  "Charles & Keith": "Fashion", "A-Kpop": "K-pop", Cokodive: "K-pop", Sephora: "Skincare", "Olive Young": "Skincare", "Best Buy": "Tech" };
+  "Charles & Keith": "Fashion", "A-Kpop": "K-pop", Cokodive: "K-pop", Sephora: "Skincare", "Olive Young": "Skincare", "Best Buy": "Tech", Jellycat: "Plush & gifts", Cider: "Fashion" };
 const EMOJI = [[/skin|serum|cream|toner|mask|cleans|essence|sunscreen|lip/i, "🧴"], [/album|cd\b|photocard|lightstick|k-?pop/i, "💿"],
   [/shoe|sneaker|boot|sandal|heel|loafer/i, "👟"], [/bag|tote|purse|wallet/i, "👜"], [/dress|skirt/i, "👗"], [/jacket|coat|blazer/i, "🧥"],
   [/jean|pant|trouser|legging|short/i, "👖"], [/shirt|top|tee|sweater|hoodie|knit/i, "👚"], [/phone|laptop|tv|camera|headphone|watch/i, "📱"]];

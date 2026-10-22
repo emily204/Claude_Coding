@@ -1,0 +1,47 @@
+name: Refresh source catalogs
+on:
+  schedule:
+    - cron: '15 16 * * *'
+  workflow_dispatch:
+    inputs:
+      source:
+        description: Source catalog to collect
+        type: choice
+        default: all
+        options: [all, sephora, jellycat, cider]
+permissions:
+  contents: write
+concurrency:
+  group: source-catalogs
+  cancel-in-progress: false
+jobs:
+  refresh:
+    # Hosted runners are verified for browser-collected Cider. An allowed custom
+    # runner is still required for scheduled Sephora/Jellycat collection.
+    runs-on: ${{ vars.CATALOG_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/mobile-shopping-fake-checkout-xr38pd
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --prefix scripts/catalog-runner --ignore-scripts --no-audit --no-fund
+      - name: Install browser for Cider collection
+        run: node scripts/catalog-runner/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Collect complete source snapshots
+        env:
+          SOURCE: ${{ inputs.source || (vars.CATALOG_RUNNER_LABEL != '' && 'all' || 'cider') }}
+        run: node scripts/catalog-runner/refresh.mjs "$SOURCE"
+      - name: Commit successful snapshots, preserving failed sources
+        if: always()
+        run: |
+          git add fakeshop/data/source-catalogs
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Refresh public source catalog snapshots'
+          git pull --rebase origin claude/mobile-shopping-fake-checkout-xr38pd
+          git push origin HEAD:claude/mobile-shopping-fake-checkout-xr38pd
