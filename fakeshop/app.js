@@ -1,5 +1,5 @@
 "use strict";
-/* Maison Lao — a browse-and-buy demo. No payment is ever processed and nothing leaves your device. */
+/* Atelier Emi — a browse-and-buy demo. No payment is ever processed and nothing leaves your device. */
 
 const KEY = "pretendpay.v1";
 const $ = s => document.querySelector(s);
@@ -167,7 +167,7 @@ function placeOrder(form) {
   showErrors(form, errs);
   if (errs.length) return toast("Please fix the highlighted fields");
   const items = cartItems(), t = totals();
-  const order = { id: "ML-" + Date.now().toString(36).toUpperCase(), date: new Date().toISOString(), total: t.total, shipping, billing,
+  const order = { id: "AE-" + Date.now().toString(36).toUpperCase(), date: new Date().toISOString(), total: t.total, shipping, billing,
     card: { brand: card.brand, last4: card.last4 }, items: items.map(i => ({ name: i.p.name, emoji: i.p.emoji, price: i.p.price, qty: i.qty })) };
   state.orders.unshift(order);
   if (form.querySelector('[name="remember"]').checked) state.profile = { shipping, billing, billingSame: same, card };
@@ -225,7 +225,7 @@ function saveProfile(form) {
 }
 
 // ---------- misc ----------
-function setTitle(t) { $("#title").textContent = t; document.title = t + " · Maison Lao"; }
+function setTitle(t) { $("#title").textContent = t; document.title = t + " · Atelier Emi"; }
 function confetti() {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   for (let i = 0; i < 28; i++) {
