@@ -1,0 +1,35 @@
+name: Refresh source catalogs
+on:
+  schedule:
+    - cron: '15 16 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: source-catalogs
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/mobile-shopping-fake-checkout-xr38pd
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --prefix scripts/catalog-runner --ignore-scripts --no-audit --no-fund
+      - name: Collect complete source snapshots
+        run: node scripts/catalog-runner/refresh.mjs
+      - name: Commit successful snapshots, preserving failed sources
+        if: always()
+        run: |
+          git add fakeshop/data/source-catalogs
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Refresh public source catalog snapshots'
+          git pull --rebase origin claude/mobile-shopping-fake-checkout-xr38pd
+          git push origin HEAD:claude/mobile-shopping-fake-checkout-xr38pd

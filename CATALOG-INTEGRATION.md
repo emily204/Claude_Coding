@@ -79,3 +79,38 @@ configured. Do not expect a CLI exchange rate to affect automatic updates.
 
 The integration has been validated locally using explicit test fixtures, not
 production listings. No production database backup or migration was performed.
+
+## Source snapshots for hosted access denials
+
+Sephora can return HTTP 403 to the hosted Cloudflare Worker even when its public
+listing is readable from another environment. Jellycat has also been added as a
+US shop-all source. A source refresh tries the store directly; on the first
+page's 403/429 or network failure, it can read a recent complete source snapshot
+from this repository's `fakeshop/data/source-catalogs/{store}.json` via the public
+raw.githubusercontent.com URL. It imports only that store into the curator's
+existing D1 database. It never replaces the curator's complete catalog with a
+source snapshot, so other stores' saved products remain intact.
+
+The `Refresh source catalogs` workflow runs daily and can be dispatched manually.
+It uses the repository's built-in Actions token with Contents write permission;
+no additional personal token is needed to write snapshots in this repository.
+Its collector installs only the locked dependencies under `scripts/catalog-runner`.
+Adapters there are copies of merch-curator/lib/sephora-catalog.ts and
+jellycat-catalog.ts; update both copies together when changing source parsing.
+The collector writes each snapshot atomically only after visiting all listing
+pages with unique product IDs. Failed sources keep their previous snapshots and
+the workflow reports failure. Successful sources can still be committed.
+
+The curator rejects incomplete snapshots and snapshots older than 72 hours.
+Snapshot timestamp changes in the middle of a refresh require a fresh retry.
+Product import notes distinguish snapshot collection time from a direct import.
+These files contain only public source product information, not D1 contents,
+manual edits, hidden flags, customer information, or credentials. Neither the
+collector nor the seed snapshots change `fakeshop/data/catalog.json`; the live
+curator remains responsible for publishing its combined visible catalog there.
+
+A push made with the built-in Actions token does not trigger the shop's Pages
+workflow; that is intentional here. The hosted curator reads the raw GitHub
+snapshot directly, so a source-snapshot update requires no Pages deployment.
+The collector runner's access must be verified independently: if a store also
+rejects GitHub Actions, automatic collection of that source is still blocked.
