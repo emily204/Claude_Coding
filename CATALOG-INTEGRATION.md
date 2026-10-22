@@ -119,8 +119,9 @@ rejects GitHub Actions, automatic collection of that source is still blocked.
 
 The first GitHub-hosted collector run returned HTTP 403 for **both** retailers:
 https://github.com/emily204/Claude_Coding/actions/runs/39760231974
-Consequently, daily scheduled collection is paused unless the repository variable
-`CATALOG_RUNNER_LABEL` is set. Manual workflow dispatch remains available to test
+Consequently, scheduled Sephora/Jellycat collection is paused unless the
+repository variable `CATALOG_RUNNER_LABEL` is set. Cider has since passed a
+separate browser-collector run and is collected daily on the default runner. Manual workflow dispatch remains available to test
 a changed access configuration. To enable reliable automation, provide a Linux
 GitHub Actions runner on a network permitted by the retailers, verify that both
 source requests succeed there, and set that variable to the runner's label.
@@ -167,5 +168,10 @@ The existing 72-hour snapshot freshness rule applies. No full D1 catalog is
 replaced by source collection, and the shop catalog file is not changed.
 
 The workflow now accepts a `source` choice, so Cider can be tested independently.
-Daily collection is still subject to the documented allowed-runner requirement;
-Cider's access from a GitHub-hosted runner must be verified separately.
+Cider's browser collector passed on a GitHub-hosted runner:
+https://github.com/emily204/Claude_Coding/actions/runs/39820132876
+It collected and committed 899 unique products across 30 pages. The daily
+workflow now defaults to Cider only on GitHub-hosted runners; selecting a
+configured allowed custom runner restores scheduled collection of all sources.
+No additional secret is required for Cider collection. Hosted curator access
+still requires deploying the updated app and testing its import there.

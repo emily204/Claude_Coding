@@ -16,9 +16,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   refresh:
-    # Both retailers denied the first GitHub-hosted run (HTTP 403). Keep the
-    # daily schedule paused until an allowed collector runner is configured.
-    if: github.event_name == 'workflow_dispatch' || vars.CATALOG_RUNNER_LABEL != ''
+    # Hosted runners are verified for browser-collected Cider. An allowed custom
+    # runner is still required for scheduled Sephora/Jellycat collection.
     runs-on: ${{ vars.CATALOG_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 30
     steps:
@@ -34,7 +33,7 @@ jobs:
         run: node scripts/catalog-runner/node_modules/playwright/cli.js install --with-deps chromium
       - name: Collect complete source snapshots
         env:
-          SOURCE: ${{ inputs.source || 'all' }}
+          SOURCE: ${{ inputs.source || (vars.CATALOG_RUNNER_LABEL != '' && 'all' || 'cider') }}
         run: node scripts/catalog-runner/refresh.mjs "$SOURCE"
       - name: Commit successful snapshots, preserving failed sources
         if: always()
