@@ -31,7 +31,7 @@
     document.body.classList.add("locked");
     const el = document.createElement("div");
     el.className = "gate";
-    el.innerHTML = `<form class="gate-box" novalidate><div class="gate-em">🛍️</div><h2>PretendPay Shop</h2><p class="muted"></p>
+    el.innerHTML = `<form class="gate-box" novalidate><div class="gate-em">🛍️</div><h2>Maison Lao</h2><p class="muted"></p>
       ${form ? `<input type="password" name="pw" autocomplete="current-password" placeholder="Password" aria-label="Password" autofocus>
       <button class="btn" type="submit">Enter</button><div class="err" role="alert" hidden></div>` : ""}</form>`;
     el.querySelector("p").textContent = msg;
