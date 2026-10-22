@@ -7,8 +7,8 @@ on:
       source:
         description: Source catalog to collect
         type: choice
-        default: all
-        options: [all, sephora, jellycat, cider, calvinklein]
+        default: hosted
+        options: [hosted, all, sephora, jellycat, cider, calvinklein]
 permissions:
   contents: write
 concurrency:
@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   refresh:
-    # Hosted runners are verified for browser-collected Cider. An allowed custom
+    # Hosted runners are verified for Cider and Calvin Klein. An allowed custom
     # runner is still required for scheduled Sephora/Jellycat collection.
     runs-on: ${{ vars.CATALOG_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 30
@@ -30,10 +30,11 @@ jobs:
           node-version: '24'
       - run: npm ci --prefix scripts/catalog-runner --ignore-scripts --no-audit --no-fund
       - name: Install browser for Cider collection
+        if: ${{ inputs.source != 'calvinklein' && inputs.source != 'sephora' && inputs.source != 'jellycat' }}
         run: node scripts/catalog-runner/node_modules/playwright/cli.js install --with-deps chromium
       - name: Collect complete source snapshots
         env:
-          SOURCE: ${{ inputs.source || (vars.CATALOG_RUNNER_LABEL != '' && 'all' || 'cider') }}
+          SOURCE: ${{ inputs.source || (vars.CATALOG_RUNNER_LABEL != '' && 'all' || 'hosted') }}
         run: node scripts/catalog-runner/refresh.mjs "$SOURCE"
       - name: Commit successful snapshots, preserving failed sources
         if: always()

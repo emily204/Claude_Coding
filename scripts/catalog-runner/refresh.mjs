@@ -7,9 +7,10 @@ import {mkdir, writeFile, rename, unlink} from 'node:fs/promises';
 const directory = new URL('../../fakeshop/data/source-catalogs/', import.meta.url);
 await mkdir(directory, {recursive: true});
 const only = process.argv[2] === 'all' ? undefined : process.argv[2];
-if (only && !['sephora', 'jellycat', 'cider', 'calvinklein'].includes(only)) throw Error('Choose sephora, jellycat, cider or calvinklein.');
+const hosted = only === 'hosted';
+if (only && !hosted && !['sephora', 'jellycat', 'cider', 'calvinklein'].includes(only)) throw Error('Choose hosted, all, sephora, jellycat, cider or calvinklein.');
 for (const [store, loadPage] of Object.entries({calvinklein: calvinKleinPage, sephora: sephoraPage, jellycat: jellycatPage, cider: null})) {
-  if (only && store !== only) continue;
+  if (hosted ? !['cider','calvinklein'].includes(store) : only && store !== only) continue;
   const temporary = new URL(store + '.json.tmp', directory);
   try {
     let cursor = null, complete = false, coverage;

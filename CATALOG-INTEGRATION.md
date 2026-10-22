@@ -171,7 +171,35 @@ The workflow now accepts a `source` choice, so Cider can be tested independently
 Cider's browser collector passed on a GitHub-hosted runner:
 https://github.com/emily204/Claude_Coding/actions/runs/39820132876
 It collected and committed 899 unique products across 30 pages. The daily
-workflow now defaults to Cider only on GitHub-hosted runners; selecting a
+workflow now defaults to Cider and Calvin Klein on GitHub-hosted runners; selecting a
 configured allowed custom runner restores scheduled collection of all sources.
 No additional secret is required for Cider collection. Hosted curator access
 still requires deploying the updated app and testing its import there.
+
+### Calvin Klein hosted HTTP 403 fallback
+
+The hosted curator can be denied by Calvin Klein even when development imports
+work. It now tries the recent repository snapshot after first-page HTTP 403/429
+or network failure, using the same fallback policy as Sephora/Jellycat. A refresh
+never switches feeds after importing direct pages. Retry starts a new job after
+a failed run; no saved products are discarded by a failed or stale feed.
+
+GitHub collection was verified by successful run
+https://github.com/emily204/Claude_Coding/actions/runs/39852810419, which published
+a complete 2,051-product feed at `fakeshop/data/source-catalogs/calvinklein.json`.
+The daily 16:15 UTC workflow now collects both Calvin Klein and Cider using the
+`hosted` selection. Sephora/Jellycat still require an allowed runner. Manual
+choices also support `calvinklein` alone. No new secret is needed.
+
+The curator rejects incomplete, empty, foreign-origin, non-USD or older-than-72h
+snapshots and pins the collection timestamp while paginating. Import method and
+collection time appear in the curator. The built-Worker check
+`node tests/source-fallback-live.mjs calvinklein` forced direct HTTP 403, then
+imported all 2,051 products from the real published GitHub feed into temporary
+D1 storage and preserved unrelated data. All 40 curator unit tests, type checking
+and the production build passed.
+
+Deploy the latest `merch-curator/main`, preserving its database and runtime
+secrets, then click Calvin Klein → Refresh store to retry the failed job.
+A GitHub feed update alone does not deploy the curator or replace Atelier Lao's
+combined catalog. Completed imports use the existing shop publication path.
