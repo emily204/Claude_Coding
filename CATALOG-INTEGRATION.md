@@ -1,5 +1,7 @@
 # Automatic fake-shop catalog
 
+Large combined shop feeds may be gzip/base64 envelopes. Read them with the shared `decodeCatalog()` helper before accessing `products`; ordinary curator exports and store source snapshots remain plain JSON.
+
 The curator remains the editor and live D1 database. The shop reads a versioned
 JSON database at `Claude_Coding/fakeshop/data/catalog.json`. GitHub Pages serves
 that file alongside the shop, so the browser needs no GitHub credential or CORS
@@ -259,3 +261,36 @@ Validation includes six shop unit tests, 44 curator unit tests, type checking,
 production build, isolated publication lifecycle checks, and mobile browser
 checks of sending/deployment/live, deferred updates, cart preservation, offline
 retention and horizontal overflow. No test publishes real catalog data.
+
+### Large catalog publication
+
+The former publisher pretty-printed the entire combined feed, base64-encoded
+it, then rejected uploads exceeding the equivalent of 9 MB of catalog JSON.
+Publication now minifies small feeds and losslessly gzip-compresses combined
+feeds above 750 KB. Every previously published product field is retained,
+including all image URLs, full descriptions, IDs, currencies and prices.
+Private D1 data and the ordinary JSON/CSV export formats are unchanged.
+
+Large `data/catalog.json` files use the envelope:
+`{schema_version:1,encoding:"gzip-base64",exported_at,count,data}`. The `data`
+field contains base64-encoded gzip of the original schema-1 catalog. The shared
+`catalog-codec.mjs` validates the encoding, expanded count and timestamp, with
+bounded decompression (64 MB expanded) and bounded compressed uploads. It is
+kept identical in the curator's `lib/` and the shop's `fakeshop/` directories.
+
+The shop decodes envelopes before conversion, retaining legacy/plain support.
+Its polling compares the compact wire representation before decompression,
+so unchanged feeds avoid repeatedly inflating and retaining a large JSON string.
+The deployment-status generator and optional manual importer also decode packed
+feeds. The publisher decodes the previous feed for unchanged detection; files
+GitHub omits from inline Contents responses are read through the Git blob API.
+Optimistic concurrency, stable cart IDs and accurate update timestamps remain.
+No new secret or permission is required. Source-store snapshot files are not
+changed to this envelope format.
+
+Validation: 52 curator tests, eight shop tests, type checking, production build,
+targeted lint, built-Worker compressed publication/unchanged tests, and mobile
+browser checks of compressed updates, checkout deferral, cart preservation,
+offline retention and timestamps. A fixture containing 18,800 products larger
+than the old 9 MB limit roundtrips all fields exactly. Tests do not substitute
+made-up products for the live catalog or publish production data.

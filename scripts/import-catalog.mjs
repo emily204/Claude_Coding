@@ -21,7 +21,8 @@ for (let i = 0; i < args.length; i++) {
 }
 if (!input) { console.error("Usage: node scripts/import-catalog.mjs <merch-catalog.json> [--per-store N] [--images] [--rate CUR=usd_value]"); process.exit(1); }
 
-const data = JSON.parse(readFileSync(input, "utf8"));
+let data = JSON.parse(readFileSync(input, "utf8"));
+if(data.encoding) data=await (await import("../fakeshop/catalog-codec.mjs")).decodeCatalog(data);
 if (!Array.isArray(data.products)) { console.error("Not a Merch Curator export: no products array."); process.exit(1); }
 
 const {products: out, skipped} = convertCatalog(data, {perStore, withImages, rates});

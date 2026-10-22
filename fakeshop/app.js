@@ -310,12 +310,14 @@ async function refreshCatalog() {
   try {
     const response = await fetch("data/catalog.json", {cache: "no-store", signal: AbortSignal.timeout(15000)});
     if (!response.ok) throw Error("Catalog unavailable");
-    const data = await response.json();
+    const received=await response.json();
+    const version=JSON.stringify(received);
+    if (version === catalogVersion) { catalogStatus("Catalog is up to date."); return; }
+    const {decodeCatalog}=await import("./catalog-codec.mjs");
+    const data = await decodeCatalog(received);
     if (data.schema_version !== 1 || !Array.isArray(data.products)) throw Error("Invalid catalog");
     if (!data.exported_at) { catalogStatus("Sample catalog — awaiting the first published update."); return; }
     if (!Number.isFinite(Date.parse(data.exported_at))) throw Error("Invalid catalog timestamp");
-    const version = JSON.stringify(data);
-    if (version === catalogVersion) { catalogStatus("Catalog is up to date."); return; }
     const {convertCatalog} = await import("./catalog-core.mjs");
     const converted = convertCatalog(data);
     // Unknown currencies must not silently empty the shop.
