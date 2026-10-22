@@ -98,8 +98,8 @@ function showErrors(root, errs) {
 
 // ---------- views ----------
 let shopCat = "All", shopStore = "All", shopQ = "", shown = 60;
-const cats = ["All", ...new Set(PRODUCTS.map(p => p.cat))];
-const stores = ["All", ...new Set(PRODUCTS.map(p => p.store))];
+let cats = ["All", ...new Set(PRODUCTS.map(p => p.cat))];
+let stores = ["All", ...new Set(PRODUCTS.map(p => p.store))];
 const thumb = p => p.img ? `<img src="${esc(p.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" data-emoji="${esc(p.emoji)}">` : p.emoji;
 function gridHtml() {
   const q = shopQ.toLowerCase();
@@ -279,12 +279,53 @@ document.addEventListener("submit", e => {
   e.preventDefault();
   if (e.target.id === "checkout") placeOrder(e.target); else if (e.target.id === "profile") saveProfile(e.target);
 });
+let catalogRequest = false, catalogVersion = "", pendingCatalog = null;
 function start() {
   $("#cart-btn").addEventListener("click", () => (location.hash = "#/cart"));
   addEventListener("hashchange", router);
   updateBadge(); router();
+  refreshCatalog();
+  setInterval(() => { if (!document.hidden) refreshCatalog(); }, 60000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshCatalog(); });
 }
 (window.requireGate || (f => f()))(start);
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
 // An image that fails to load falls back to the product's emoji.
 document.addEventListener("error", e => { const i = e.target; if (i.tagName === "IMG" && i.dataset.emoji) i.replaceWith(document.createTextNode(i.dataset.emoji)); }, true);
+
+// Load the versioned repository catalog after unlocking; retain bundled products
+// until the curator publishes its first real snapshot. Never send shop state.
+async function refreshCatalog() {
+  if (catalogRequest) return;
+  catalogRequest = true;
+  try {
+    const response = await fetch("data/catalog.json", {cache: "no-store", signal: AbortSignal.timeout(15000)});
+    if (!response.ok) throw Error("Catalog unavailable");
+    const data = await response.json();
+    if (data.schema_version !== 1 || !Array.isArray(data.products)) throw Error("Invalid catalog");
+    if (!data.exported_at || !Number.isFinite(Date.parse(data.exported_at))) return;
+    const version = JSON.stringify(data);
+    if (version === catalogVersion) return;
+    const {convertCatalog} = await import("./catalog-core.mjs");
+    const converted = convertCatalog(data);
+    // Unknown currencies must not silently empty the shop.
+    if (data.products.length && !converted.products.length) throw Error("No supported products in catalog");
+    pendingCatalog = {products: converted.products, version};
+    applyPendingCatalog();
+  } catch { /* Keep the last usable catalog when offline or the feed is invalid. */ }
+  finally { catalogRequest = false; }
+}
+function applyPendingCatalog() {
+  if (!pendingCatalog) return;
+  const route = location.hash.split("/")[1] || "";
+  // Do not replace prices or forms during checkout, cart review, or profile edits.
+  if (!["", "product"].includes(route)) return;
+  PRODUCTS.splice(0, PRODUCTS.length, ...pendingCatalog.products);
+  catalogVersion = pendingCatalog.version; pendingCatalog = null;
+  cats = ["All", ...new Set(PRODUCTS.map(p => p.cat))];
+  stores = ["All", ...new Set(PRODUCTS.map(p => p.store))];
+  if (!cats.includes(shopCat)) shopCat = "All";
+  if (!stores.includes(shopStore)) shopStore = "All";
+  router();
+}
+addEventListener("hashchange", applyPendingCatalog);
