@@ -8,7 +8,7 @@ on:
         description: Source catalog to collect
         type: choice
         default: hosted
-        options: [hosted, all, sephora, jellycat, cider, calvinklein]
+        options: [hosted, all, sephora, jellycat, cider, calvinklein, bananarepublic]
 permissions:
   contents: write
 concurrency:
@@ -30,7 +30,7 @@ jobs:
           node-version: '24'
       - run: npm ci --prefix scripts/catalog-runner --ignore-scripts --no-audit --no-fund
       - name: Install browser for Cider collection
-        if: ${{ inputs.source != 'calvinklein' && inputs.source != 'sephora' && inputs.source != 'jellycat' }}
+        if: ${{ inputs.source != 'bananarepublic' && inputs.source != 'calvinklein' && inputs.source != 'sephora' && inputs.source != 'jellycat' }}
         run: node scripts/catalog-runner/node_modules/playwright/cli.js install --with-deps chromium
       - name: Collect complete source snapshots
         env:

@@ -1,4 +1,5 @@
 // These adapters are vendored from merch-curator/lib; update both copies together.
+import {bananaRepublicPage} from './bananarepublic-runner.ts';
 import {calvinKleinPage} from './calvinklein-catalog.ts';
 import {sephoraPage} from './sephora-catalog.ts';
 import {jellycatPage} from './jellycat-catalog.ts';
@@ -8,8 +9,8 @@ const directory = new URL('../../fakeshop/data/source-catalogs/', import.meta.ur
 await mkdir(directory, {recursive: true});
 const only = process.argv[2] === 'all' ? undefined : process.argv[2];
 const hosted = only === 'hosted';
-if (only && !hosted && !['sephora', 'jellycat', 'cider', 'calvinklein'].includes(only)) throw Error('Choose hosted, all, sephora, jellycat, cider or calvinklein.');
-for (const [store, loadPage] of Object.entries({calvinklein: calvinKleinPage, sephora: sephoraPage, jellycat: jellycatPage, cider: null})) {
+if (only && !hosted && !['sephora', 'jellycat', 'cider', 'calvinklein', 'bananarepublic'].includes(only)) throw Error('Choose hosted, all, sephora, jellycat, cider, calvinklein or bananarepublic.');
+for (const [store, loadPage] of Object.entries({bananarepublic: bananaRepublicPage, calvinklein: calvinKleinPage, sephora: sephoraPage, jellycat: jellycatPage, cider: null})) {
   if (hosted ? !['cider','calvinklein'].includes(store) : only && store !== only) continue;
   const temporary = new URL(store + '.json.tmp', directory);
   try {
