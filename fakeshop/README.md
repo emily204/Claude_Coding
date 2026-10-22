@@ -24,3 +24,14 @@ The repo deploys itself to GitHub Pages (`.github/workflows/pages.yml`). After a
     cd fakeshop && python3 -m http.server 8000
 
 Any card number of 13-19 digits with a future expiry and a 3-4 digit CVC works; tap "Fill a test card" for one.
+
+## Refresh the catalog from Merch Curator
+
+1. In Merch Curator, use the page's export button to download `merch-catalog.json`.
+2. Put the file anywhere in this repo (or send it to Claude), then run:
+
+       node scripts/import-catalog.mjs merch-catalog.json --per-store 40 --rate KRW=0.00072
+
+   Options: `--per-store N` caps items per store; `--rate CUR=usd_value` converts other currencies (items in a currency
+   with no rate are skipped); `--images` links each store's first product image (the app falls back to the emoji if it fails to load).
+3. Commit and push `fakeshop/products.js`; the site redeploys.

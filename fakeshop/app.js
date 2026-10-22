@@ -97,16 +97,18 @@ function showErrors(root, errs) {
 }
 
 // ---------- views ----------
-let shopCat = "All", shopStore = "All", shopQ = "";
+let shopCat = "All", shopStore = "All", shopQ = "", shown = 60;
 const cats = ["All", ...new Set(PRODUCTS.map(p => p.cat))];
 const stores = ["All", ...new Set(PRODUCTS.map(p => p.store))];
+const thumb = p => p.img ? `<img src="${esc(p.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" data-emoji="${esc(p.emoji)}">` : p.emoji;
 function gridHtml() {
   const q = shopQ.toLowerCase();
   const list = PRODUCTS.filter(p => (shopCat === "All" || p.cat === shopCat) && (shopStore === "All" || p.store === shopStore) && (!q || (p.name + p.cat + p.store).toLowerCase().includes(q)));
   if (!list.length) return `<div class="empty"><div class="em">🔍</div><p>Nothing matches “${esc(shopQ)}”.</p></div>`;
-  return `<div class="grid">${list.map(p => `<div class="card"><a href="#/product/${p.id}"><div class="thumb" style="background:${p.bg}">${p.emoji}</div>
+  return `<div class="grid">${list.slice(0, shown).map(p => `<div class="card"><a href="#/product/${p.id}"><div class="thumb" style="background:${p.bg}">${thumb(p)}</div>
     <div class="info"><div class="muted store">${esc(p.store)}</div><div class="name">${esc(p.name)}</div><div class="price">${money(p.price)}</div></div></a>
-    <button class="btn sm" data-action="add" data-id="${p.id}">Add to cart</button></div>`).join("")}</div>`;
+    <button class="btn sm" data-action="add" data-id="${p.id}">Add to cart</button></div>`).join("")}</div>
+    ${list.length > shown ? `<button class="btn ghost" style="margin-top:14px" data-action="more">Show more (${list.length - shown} left)</button>` : ""}`;
 }
 function shopView() {
   setTitle("Shop");
@@ -118,7 +120,7 @@ function shopView() {
 function productView(id) {
   const p = byId(id); if (!p) return location.hash = "#/";
   setTitle(p.name);
-  view.innerHTML = `<div class="hero" style="background:${p.bg}">${p.emoji}</div>
+  view.innerHTML = `<div class="hero" style="background:${p.bg}">${thumb(p)}</div>
     <div class="panel"><div class="muted">${esc(p.store)} · ${esc(p.cat)}</div><h2 class="big" style="margin:4px 0">${esc(p.name)}</h2>
     <div class="price big">${money(p.price)}</div><p>${esc(p.desc)}</p>
     <button class="btn" data-action="add" data-id="${p.id}">Add to cart</button>
@@ -247,8 +249,9 @@ document.addEventListener("click", e => {
   e.preventDefault();
   if (a === "add") addToCart(id);
   else if (a === "buynow") { addToCart(id); location.hash = "#/checkout"; }
-  else if (a === "store") { shopStore = el.dataset.store; shopView(); }
-  else if (a === "cat") { shopCat = el.dataset.cat; shopView(); }
+  else if (a === "more") { shown += 60; $("#grid").innerHTML = gridHtml(); }
+  else if (a === "store") { shopStore = el.dataset.store; shown = 60; shopView(); }
+  else if (a === "cat") { shopCat = el.dataset.cat; shown = 60; shopView(); }
   else if (a === "inc" || a === "dec") { if (line) { line.qty += a === "inc" ? 1 : -1; if (line.qty < 1) state.cart = state.cart.filter(i => i !== line); save(); cartView(); } }
   else if (a === "remove") { state.cart = state.cart.filter(i => i.id !== id); save(); cartView(); }
   else if (a === "lock") window.lockShop();
@@ -262,7 +265,7 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("input", e => {
   const t = e.target;
-  if (t.id === "q") { shopQ = t.value; $("#grid").innerHTML = gridHtml(); }
+  if (t.id === "q") { shopQ = t.value; shown = 60; $("#grid").innerHTML = gridHtml(); }
   else if (t.id === "cc-number") {
     const d = t.value.replace(/\D/g, "").slice(0, 19); t.value = d.replace(/(.{4})/g, "$1 ").trim();
     $("#cc-preview").textContent = d ? d.padEnd(16, "•").replace(/(.{4})/g, "$1 ").trim() : "•••• •••• •••• ••••";
@@ -283,3 +286,5 @@ function start() {
 }
 (window.requireGate || (f => f()))(start);
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
+// An image that fails to load falls back to the product's emoji.
+document.addEventListener("error", e => { const i = e.target; if (i.tagName === "IMG" && i.dataset.emoji) i.replaceWith(document.createTextNode(i.dataset.emoji)); }, true);
