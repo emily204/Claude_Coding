@@ -2,6 +2,11 @@
   "name": "merch-source-catalog-runner",
   "private": true,
   "type": "module",
-  "engines": {"node": ">=24"},
-  "dependencies": {"linkedom": "0.18.12"}
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "linkedom": "0.18.12",
+    "playwright": "1.62.1"
+  }
 }

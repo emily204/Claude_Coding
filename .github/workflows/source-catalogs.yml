@@ -3,6 +3,12 @@ on:
   schedule:
     - cron: '15 16 * * *'
   workflow_dispatch:
+    inputs:
+      source:
+        description: Source catalog to collect
+        type: choice
+        default: all
+        options: [all, sephora, jellycat, cider]
 permissions:
   contents: write
 concurrency:
@@ -24,8 +30,12 @@ jobs:
         with:
           node-version: '24'
       - run: npm ci --prefix scripts/catalog-runner --ignore-scripts --no-audit --no-fund
+      - name: Install browser for Cider collection
+        run: node scripts/catalog-runner/node_modules/playwright/cli.js install --with-deps chromium
       - name: Collect complete source snapshots
-        run: node scripts/catalog-runner/refresh.mjs
+        env:
+          SOURCE: ${{ inputs.source || 'all' }}
+        run: node scripts/catalog-runner/refresh.mjs "$SOURCE"
       - name: Commit successful snapshots, preserving failed sources
         if: always()
         run: |
