@@ -203,7 +203,7 @@ and the production build passed.
 
 Deploy the latest `merch-curator/main`, preserving its database and runtime
 secrets, then click Calvin Klein → Refresh store to retry the failed job.
-A GitHub feed update alone does not deploy the curator or replace Atelier Lao's
+A GitHub feed update alone does not deploy the curator or replace Atelier Emi's
 combined catalog. Completed imports use the existing shop publication path.
 
 ### Banana Republic catalog consistency fix
@@ -234,9 +234,9 @@ feed into temporary D1 and checks that unrelated records remain intact.
 Deploy latest `merch-curator/main`, preserving database and runtime secrets,
 then click Banana Republic → Refresh store to start a fresh job.
 
-### Visible Atelier Lao update progress
+### Visible Atelier Emi update progress
 
-The curator's Atelier Lao control shows sending, waiting for deployment, confirmed
+The curator's Atelier Emi control shows sending, waiting for deployment, confirmed
 live, failed, delayed, and unavailable status. Its publication attempt is stored
 in a small additive `catalog_publication` D1 table created automatically; no
 existing product tables are changed. A two-minute publish lease prevents

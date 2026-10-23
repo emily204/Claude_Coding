@@ -1,5 +1,5 @@
 "use strict";
-/* Atelier Lao — a browse-and-buy demo. No payment is ever processed and nothing leaves your device. */
+/* Atelier Emi — a browse-and-buy demo. No payment is ever processed and nothing leaves your device. */
 
 const KEY = "pretendpay.v1";
 const $ = s => document.querySelector(s);
@@ -225,7 +225,7 @@ function saveProfile(form) {
 }
 
 // ---------- misc ----------
-function setTitle(t) { $("#title").textContent = t; document.title = t + " · Atelier Lao"; }
+function setTitle(t) { $("#title").textContent = t; document.title = t + " · Atelier Emi"; }
 function confetti() {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   for (let i = 0; i < 28; i++) {
