@@ -1,4 +1,4 @@
-const CACHE = "pretendpay-v13";
+const CACHE = "pretendpay-v14";
 const FILES = ["./", "index.html", "styles.css", "app.js", "products.js", "manifest.json", "icon.svg", "tax.js", "gate.js", "catalog-core.mjs", "catalog-codec.mjs", "shop-categories.mjs"];
 self.addEventListener("install", e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())));
 self.addEventListener("activate", e => e.waitUntil(

@@ -58,3 +58,7 @@ test('shop respects the curator category while retaining legacy store-based fall
 test('Nordstrom is excluded from all imported shop catalogs',()=>{
  const result=convertCatalog(feed([product,{...product,id:'nordstrom:1',retailer:'Nordstrom'}]));assert.equal(result.products.length,1);assert.equal(result.skipped.removedStore,1);
 });
+test('curator custom categories become shop categories without a fixed allowlist',()=>{
+ const {products}=convertCatalog(feed([{...product,shop_category:'Weekend picks'},{...product,id:'2',shop_category:'Travel essentials'}]));
+ assert.deepEqual(new Set(products.map(p=>p.cat)),new Set(['Weekend picks','Travel essentials']));
+});

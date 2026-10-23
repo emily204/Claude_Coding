@@ -29,5 +29,6 @@ function groupFor(store, category, title) {
   return STORE_GROUP[store] || "Other";
 }
 export const SHOP_CATEGORIES=['Fashion','K-pop','Skincare','Tech','Plush & gifts','Accessories','Home','Other'];
-export function shopCategory(p){return SHOP_CATEGORIES.includes(p.shop_category)?p.shop_category:groupFor(String(p.retailer||'').replace(/<[^>]*>/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim().slice(0,40),String(p.category||'').slice(0,120),String(p.title||'').slice(0,90));}
+export function validShopCategory(value){return typeof value==='string'&&value.trim().length>0&&value.trim().length<=80&&!/[\u0000-\u001f\u007f]/.test(value);}
+export function shopCategory(p){return validShopCategory(p.shop_category)?p.shop_category.trim():groupFor(String(p.retailer||'').replace(/<[^>]*>/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim().slice(0,40),String(p.category||'').slice(0,120),String(p.title||'').slice(0,90));}
 export function removedStore(p){return String(p.retailer||p.store||'').trim().toLowerCase()==='nordstrom';}

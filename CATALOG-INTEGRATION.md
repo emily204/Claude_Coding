@@ -326,3 +326,24 @@ Accessories and Home. The curator builds a small runtime category index for SQL
 counts and pagination, recomputing entries when category inputs change. Its first
 category load can take longer while existing products are indexed. No manual
 migration is needed.
+
+### Batch category editing and custom shop categories
+
+The curator’s Batch update categories panel updates selected products (selection
+can span pages, up to 1,000 IDs), or all products matching the current store,
+search and category filters across every page. Its apply button displays the
+number targeted. Changing filters clears product selection. Either store category,
+Atelier Emi category, or both can be changed; resetting the latter to automatic
+restores the shared classifier. Changes use one parameterized database update,
+preserve unrelated edits, and persist through source refreshes. Store category
+updates replace old category-array memberships with the entered category label.
+
+Atelier Emi category is now a free-text field in both the product editor and the
+batch panel, with existing names offered as suggestions. Names support up to
+80 characters without control characters. The curator is the source of these
+category names; the shop accepts them from `shop_category` and builds its category
+chips from the received products. Default rules apply only when no explicit
+category is saved. Category changes still need a successful catalog publication
+and shop deployment to appear live. Batch saving attempts publication once using
+the existing credentials and refresh-completion checks; use Update Atelier Emi
+to retry if publication is blocked. No new secret or migration is needed.
