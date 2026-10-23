@@ -319,7 +319,7 @@ async function refreshCatalog() {
     if (!data.exported_at) { catalogStatus("Sample catalog — awaiting the first published update."); return; }
     if (!Number.isFinite(Date.parse(data.exported_at))) throw Error("Invalid catalog timestamp");
     const {convertCatalog} = await import("./catalog-core.mjs");
-    const converted = convertCatalog(data);
+    const converted = convertCatalog(data, {withImages: true});
     // Unknown currencies must not silently empty the shop.
     if (data.products.length && !converted.products.length) throw Error("No supported products in catalog");
     pendingCatalog = {products: converted.products, version, updatedAt:data.exported_at};
