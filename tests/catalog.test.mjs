@@ -39,6 +39,7 @@ test('CLI works with default arguments and writes both the bundle and repository
     mkdirSync(join(root, 'scripts')); mkdirSync(join(root, 'fakeshop/data'), {recursive: true});
     copyFileSync(new URL('../scripts/import-catalog.mjs', import.meta.url), join(root, 'scripts/import-catalog.mjs'));
     copyFileSync(new URL('../fakeshop/catalog-core.mjs', import.meta.url), join(root, 'fakeshop/catalog-core.mjs'));
+    copyFileSync(new URL('../fakeshop/shop-categories.mjs', import.meta.url), join(root, 'fakeshop/shop-categories.mjs'));
     const input = join(root, 'export.json'); writeFileSync(input, JSON.stringify(feed([product])));
     const result = spawnSync(process.execPath, [join(root, 'scripts/import-catalog.mjs'), input], {encoding: 'utf8'});
     assert.equal(result.status, 0, result.stderr);
@@ -48,4 +49,12 @@ test('CLI works with default arguments and writes both the bundle and repository
     const invalid = spawnSync(process.execPath, [join(root, 'scripts/import-catalog.mjs'), input, '--rate', 'KRW=0']);
     assert.notEqual(invalid.status, 0);
   } finally { rmSync(root, {recursive: true, force: true}); }
+});
+test('shop respects the curator category while retaining legacy store-based fallback',()=>{
+ const data=feed([{...product,shop_category:'Other'},{...product,id:'2'}]);const converted=convertCatalog(data).products;
+ assert.equal(converted.find(p=>p.id===convertCatalog(feed([{...product,shop_category:'Other'}])).products[0].id).cat,'Other');
+ assert.equal(converted.find(p=>p.id===convertCatalog(feed([{...product,id:'2'}])).products[0].id).cat,'Fashion');
+});
+test('Nordstrom is excluded from all imported shop catalogs',()=>{
+ const result=convertCatalog(feed([product,{...product,id:'nordstrom:1',retailer:'Nordstrom'}]));assert.equal(result.products.length,1);assert.equal(result.skipped.removedStore,1);
 });

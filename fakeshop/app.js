@@ -1,6 +1,8 @@
 "use strict";
 /* Atelier Emi — a browse-and-buy demo. No payment is ever processed and nothing leaves your device. */
 
+// Nordstrom is no longer offered, including the offline/sample catalog.
+for(let i=PRODUCTS.length-1;i>=0;i--)if(String(PRODUCTS[i].store).toLowerCase()==='nordstrom')PRODUCTS.splice(i,1);
 const KEY = "pretendpay.v1";
 const $ = s => document.querySelector(s);
 const view = $("#view");
@@ -40,7 +42,7 @@ function addToCart(id) {
   save(); toast("Added to cart 🛒");
 }
 function updateBadge() {
-  const n = state.cart.reduce((s, i) => s + i.qty, 0);
+  const n = cartItems().reduce((s, i) => s + i.qty, 0);
   const b = $("#cart-count"); b.textContent = n; b.hidden = n === 0;
 }
 
@@ -347,6 +349,7 @@ function applyPendingCatalog() {
   // Do not replace prices or forms during checkout, cart review, or profile edits.
   if (!["", "product"].includes(route)) { catalogStatus("Update ready — return to Shop to apply it."); return; }
   PRODUCTS.splice(0, PRODUCTS.length, ...pendingCatalog.products);
+  updateBadge();
   catalogVersion = pendingCatalog.version; catalogUpdatedAt = pendingCatalog.updatedAt; pendingCatalog = null;
   catalogStatus("Catalog is up to date.");
   cats = ["All", ...new Set(PRODUCTS.map(p => p.cat))];

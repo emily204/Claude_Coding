@@ -294,3 +294,35 @@ browser checks of compressed updates, checkout deferral, cart preservation,
 offline retention and timestamps. A fixture containing 18,800 products larger
 than the old 9 MB limit roundtrips all fields exactly. Tests do not substitute
 made-up products for the live catalog or publish production data.
+
+### Categories, cancellation, and Nordstrom removal
+
+The curator shows each product’s original store categories and its effective
+Atelier Emi category. Both have filters with counts across the saved catalog,
+and matching exports include all pages. Store category arrays are preserved;
+missing metadata is shown as Uncategorized. Counts can exceed the shop’s counts
+because the shop still applies its stock and currency filters.
+
+An Atelier Emi category override saved in the curator is published as
+`shop_category`. The shared `shop-categories.mjs` in both repositories supplies
+the same defaults and allowed categories. Keep these two module copies identical.
+Overrides survive source refreshes; choosing Automatic restores the store default.
+
+Refreshes can be cancelled individually or together. Cancellation keeps products
+already saved, prevents subsequent writes from the cancelled run, and lets other
+stores continue. A user-cancelled refresh is an intentional exception and does
+not block catalog publishing. Actual incomplete/failed refreshes retain their
+existing publication checks. Cancellation request records are created at runtime;
+no manual database migration is required.
+
+Nordstrom is removed from connections, active curator queries, exports and new
+published feeds. The shop also excludes Nordstrom from imported and bundled
+catalogs. Historical saved database records are retained. Deploy the curator
+update preserving its database and runtime secrets, then publish once to send
+the category metadata and the filtered catalog to Atelier Emi.
+
+The shared classifier also preserves the latest shop item-category rules, including
+Accessories and Home. The curator builds a small runtime category index for SQL
+counts and pagination, recomputing entries when category inputs change. Its first
+category load can take longer while existing products are indexed. No manual
+migration is needed.
