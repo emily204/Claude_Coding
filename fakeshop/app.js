@@ -23,12 +23,17 @@ function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.ad
 
 // ---------- cart math ----------
 const cartItems = () => state.cart.map(i => ({ ...i, p: byId(i.id) })).filter(i => i.p);
-function totals() {
+// Shipping settings: orders at or above FREE_SHIPPING_MIN ship free; otherwise SHIPPING_FEE applies.
+const FREE_SHIPPING_MIN = 99, SHIPPING_FEE = 4.99;
+// Sales tax follows the shipping state's combined (state + average local) rate; with no state yet it is left out.
+function totals(st = state.profile.shipping.state) {
   const sub = cartItems().reduce((s, i) => s + i.p.price * i.qty, 0);
-  const ship = sub === 0 || sub >= 50 ? 0 : 4.99;
-  const tax = Math.round(sub * 0.08 * 100) / 100;
-  return { sub, ship, tax, total: sub + ship + tax };
+  const ship = sub === 0 || sub >= FREE_SHIPPING_MIN ? 0 : SHIPPING_FEE;
+  const code = stateCode(st), rate = taxRateFor(code);
+  const tax = rate == null ? 0 : Math.round(sub * rate) / 100;
+  return { sub, ship, tax, code, rate, total: sub + ship + tax };
 }
+const pct = r => String(+r.toFixed(2)) + "%";
 function addToCart(id) {
   const l = state.cart.find(i => i.id === id);
   l ? l.qty++ : state.cart.push({ id, qty: 1 });
@@ -44,8 +49,11 @@ const FIELDS = [["name", "Full name", "name"], ["line1", "Address line 1", "addr
 function addrForm(prefix, a) {
   const inp = (k, label, ac, extra = "") => `<label for="${prefix}-${k}">${label}</label><input id="${prefix}-${k}" name="${prefix}.${k}" autocomplete="${prefix === "ship" ? "shipping " : "billing "}${ac}" value="${esc(a[k])}" ${extra}>`;
   return FIELDS.map(([k, l, ac]) => inp(k, l, ac)).join("") +
-    `<div class="two"><div>${inp("city", "City", "address-level2")}</div><div>${inp("state", "State / Region", "address-level1")}</div></div>
-     <div class="two"><div>${inp("zip", "ZIP / Postal code", "postal-code")}</div><div>${inp("country", "Country", "country-name")}</div></div>`;
+    `<div class="two"><div>${inp("city", "City", "address-level2")}</div><div><label for="${prefix}-state">State</label>
+       <select id="${prefix}-state" name="${prefix}.state" autocomplete="${prefix === "ship" ? "shipping " : "billing "}address-level1">
+       <option value="">Select…</option>${US_STATES.map(([c, n]) => `<option value="${c}" ${c === stateCode(a.state) ? "selected" : ""}>${n}</option>`).join("")}</select></div></div>
+     <div class="two"><div>${inp("zip", "ZIP code", "postal-code", 'inputmode="numeric"')}</div><div><label for="${prefix}-country">Country</label>
+       <select id="${prefix}-country" name="${prefix}.country"><option>United States</option></select></div></div>`;
 }
 function cardForm(c) {
   return `<div class="ccard"><div class="top"><span>FAKE CARD</span><span>DEMO ONLY</span></div>
@@ -126,18 +134,19 @@ function productView(id) {
     <button class="btn" data-action="add" data-id="${p.id}">Add to cart</button>
     <button class="btn ghost" style="margin-top:8px" data-action="buynow" data-id="${p.id}">Buy now</button></div>`;
 }
-function summaryHtml() {
-  const t = totals();
+function summaryHtml(st) {
+  const t = totals(st);
   return `<div class="row"><span>Subtotal</span><span>${money(t.sub)}</span></div>
     <div class="row"><span>Shipping</span><span>${t.ship ? money(t.ship) : "Free"}</span></div>
-    <div class="row"><span>Tax (8%)</span><span>${money(t.tax)}</span></div>
-    <div class="row"><b>Total</b><b class="price">${money(t.total)}</b></div>`;
+    <div class="row"><span>${t.rate == null ? "Sales tax" : `Sales tax (${t.code} ${pct(t.rate)})`}</span><span>${t.rate == null ? "Choose a state" : money(t.tax)}</span></div>
+    <div class="row"><b>Total</b><b class="price">${money(t.total)}</b></div>
+    ${t.sub > 0 && t.sub < FREE_SHIPPING_MIN ? `<p class="muted">Add ${money(FREE_SHIPPING_MIN - t.sub)} more for free shipping.</p>` : ""}`;
 }
 function cartView() {
   setTitle("Your cart");
   const items = cartItems();
   if (!items.length) { view.innerHTML = `<div class="empty"><div class="em">🛒</div><p>Your cart is empty.</p><a class="btn" href="#/">Start browsing</a></div>`; return; }
-  view.innerHTML = `<div class="panel">${items.map(i => `<div class="line"><div class="em" style="background:${i.p.bg}">${i.p.emoji}</div>
+  view.innerHTML = `<div class="panel">${items.map(i => `<div class="line"><div class="em" style="background:${i.p.bg}">${thumb(i.p)}</div>
     <div class="grow"><div class="nm">${esc(i.p.name)}</div><div class="price">${money(i.p.price)}</div>
     <div class="qty"><button data-action="dec" data-id="${i.id}" aria-label="Decrease quantity">−</button><span>${i.qty}</span><button data-action="inc" data-id="${i.id}" aria-label="Increase quantity">+</button></div></div>
     <button class="icon-btn" style="color:inherit;font-size:20px" data-action="remove" data-id="${i.id}" aria-label="Remove ${esc(i.p.name)}">🗑️</button></div>`).join("")}</div>
@@ -154,7 +163,8 @@ function checkoutView() {
       <label class="check"><input type="checkbox" id="same" name="same" ${pr.billingSame ? "checked" : ""}> Same as shipping</label>
       <div id="billing" ${pr.billingSame ? "hidden" : ""}>${addrForm("bill", pr.billing)}</div></div>
     <div class="panel"><h2>💳 Payment (fake)</h2>${cardForm(pr.card)}</div>
-    <div class="panel"><h2>Order summary</h2>${summaryHtml()}
+    <div class="panel"><h2>Order summary</h2><div id="summary">${summaryHtml(pr.shipping.state)}</div>
+      <p class="muted">Tax is an estimate: your state's rate plus a typical local rate.</p>
       <label class="check"><input type="checkbox" name="remember" checked> Save address &amp; card for next time</label></div>
     <button class="btn" type="submit">Place pretend order</button></form>`;
 }
@@ -166,9 +176,9 @@ function placeOrder(form) {
   const card = readCard(form, errs, pr.card);
   showErrors(form, errs);
   if (errs.length) return toast("Please fix the highlighted fields");
-  const items = cartItems(), t = totals();
-  const order = { id: "AE-" + Date.now().toString(36).toUpperCase(), date: new Date().toISOString(), total: t.total, shipping, billing,
-    card: { brand: card.brand, last4: card.last4 }, items: items.map(i => ({ name: i.p.name, emoji: i.p.emoji, price: i.p.price, qty: i.qty })) };
+  const items = cartItems(), t = totals(shipping.state);
+  const order = { id: "AE-" + Date.now().toString(36).toUpperCase(), date: new Date().toISOString(), total: t.total, tax: t.tax, taxRate: t.rate, shipping, billing,
+    card: { brand: card.brand, last4: card.last4 }, items: items.map(i => ({ name: i.p.name, emoji: i.p.emoji, img: i.p.img, price: i.p.price, qty: i.qty })) };
   state.orders.unshift(order);
   if (form.querySelector('[name="remember"]').checked) state.profile = { shipping, billing, billingSame: same, card };
   state.cart = []; save();
@@ -185,7 +195,8 @@ function confirmView(id) {
 const addrText = a => `${esc(a.name)}<br>${esc(a.line1)}${a.line2 ? ", " + esc(a.line2) : ""}<br>${esc(a.city)}, ${esc(a.state)} ${esc(a.zip)}<br>${esc(a.country)}`;
 function orderCard(o) {
   return `<div class="panel"><div class="row"><b>${esc(o.id)}</b><span class="muted">${new Date(o.date).toLocaleDateString()}</span></div>
-    ${o.items.map(i => `<div class="row"><span>${i.emoji} ${esc(i.name)} × ${i.qty}</span><span>${money(i.price * i.qty)}</span></div>`).join("")}
+    ${o.items.map(i => `<div class="row"><span>${i.img ? `<img class="oi" src="${esc(i.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" data-emoji="${esc(i.emoji)}">` : i.emoji} ${esc(i.name)} × ${i.qty}</span><span>${money(i.price * i.qty)}</span></div>`).join("")}
+    ${o.tax != null ? `<div class="row"><span>Sales tax${o.taxRate ? ` (${pct(o.taxRate)})` : ""}</span><span>${money(o.tax)}</span></div>` : ""}
     <div class="row"><b>Total (pretend)</b><b class="price">${money(o.total)}</b></div><hr>
     <p class="muted"><b>Ships to</b><br>${addrText(o.shipping)}</p>
     <p class="muted"><b>Billed to</b><br>${addrText(o.billing)}</p>
@@ -274,7 +285,10 @@ document.addEventListener("input", e => {
     t.value = d; $("#cc-exp").textContent = d || "MM/YY";
   } else if (t.id === "cc-holder") $("#cc-name").textContent = t.value.toUpperCase() || "YOUR NAME";
 });
-document.addEventListener("change", e => { if (e.target.id === "same") $("#billing").hidden = e.target.checked; });
+document.addEventListener("change", e => {
+  if (e.target.id === "same") $("#billing").hidden = e.target.checked;
+  if (e.target.name === "ship.state" && $("#summary")) $("#summary").innerHTML = summaryHtml(e.target.value);
+});
 document.addEventListener("submit", e => {
   e.preventDefault();
   if (e.target.id === "checkout") placeOrder(e.target); else if (e.target.id === "profile") saveProfile(e.target);
